@@ -7,7 +7,10 @@
             font-weight: bold;
         }
         .low-card {
-            color: green;
+            color: blue;
+        }
+        .mid-card {
+            color: purple;
         }
         .high-card {
             color: red;
@@ -19,43 +22,59 @@
     <button onclick="drawCard()">Draw Card</button>
     <p id="cardValue">Press the button to draw a card.</p>
     <p id="potValue">Pot: 2 cents</p>
-    <p id="drawnCards">Drawn Cards: </p>
+    <div id="drawnCards">
+        <p>Drawn Cards Under 5: <span id="drawnCardsUnder5"></span></p>
+        <p>Drawn Cards Exactly 5: <span id="drawnCards5"></span></p>
+        <p>Drawn Cards Over 5: <span id="drawnCardsOver5"></span></p>
+    </div>
     <script>
         let currentPot = 2;
-        let drawnCards = [];
+        let drawnCardsUnder5 = [];
+        let drawnCards5 = [];
+        let drawnCardsOver5 = [];
         let drawCount = 0;
 
         function drawCard() {
-            // Ensure unique draw
+            // Ensure unique draw within the range 1-10
             let cardValue;
             do {
-                cardValue = Math.floor(Math.random() * 13) + 1;
-            } while (drawnCards.includes(cardValue) && drawnCards.length < 25);
+                cardValue = Math.floor(Math.random() * 10) + 1;
+            } while ((drawnCardsUnder5.includes(cardValue) || 
+                      drawnCards5.includes(cardValue) || 
+                      drawnCardsOver5.includes(cardValue)) && 
+                     (drawnCardsUnder5.length + drawnCards5.length + drawnCardsOver5.length < 10));
 
-            drawnCards.push(cardValue);
             drawCount++;
 
             let message = "";
             if (cardValue > 5) {
                 currentPot += 1; // Win scenario
+                drawnCardsOver5.push(cardValue);
                 message = "<span class='high-card card-value'>" + cardValue + "</span>. You win! New pot: " + currentPot + " cents.";
             } else if (cardValue === 5) {
                 currentPot -= 0.5;
-                message = "<span class='card-value'>" + cardValue + "</span>. You lose 0.5 cents. New pot: " + currentPot + " cents.";
+                drawnCards5.push(cardValue);
+                message = "<span class='mid-card card-value'>" + cardValue + "</span>. You lose 0.5 cents. New pot: " + currentPot + " cents.";
             } else {
+                drawnCardsUnder5.push(cardValue);
                 message = "<span class='low-card card-value'>" + cardValue + "</span>. You lose everything.";
                 currentPot = 2; // Reset pot for the next round
             }
 
-            if (drawCount === 25) {
-                drawnCards = []; // Reset the drawn cards
+            // Check if the deck is empty
+            if (drawCount === 25 || (drawnCardsUnder5.length + drawnCards5.length + drawnCardsOver5.length === 10)) {
+                drawnCardsUnder5 = []; // Reset the drawn cards under 5
+                drawnCards5 = []; // Reset the drawn cards at 5
+                drawnCardsOver5 = []; // Reset the drawn cards over 5
                 drawCount = 0; // Reset the draw count
                 message += " The deck is reset.";
             }
 
             document.getElementById("cardValue").innerHTML = message;
             document.getElementById("potValue").innerText = "Pot: " + currentPot + " cents";
-            document.getElementById("drawnCards").innerText = "Drawn Cards: " + drawnCards.join(", ");
+            document.getElementById("drawnCardsUnder5").innerText = drawnCardsUnder5.join(", ");
+            document.getElementById("drawnCards5").innerText = drawnCards5.join(", ");
+            document.getElementById("drawnCardsOver5").innerText = drawnCardsOver5.join(", ");
         }
     </script>
 </body>
