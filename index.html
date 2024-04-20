@@ -2,30 +2,60 @@
 <html>
 <head>
     <title>Card Game</title>
+    <style>
+        .card-value {
+            font-weight: bold;
+        }
+        .low-card {
+            color: green;
+        }
+        .high-card {
+            color: red;
+        }
+    </style>
 </head>
 <body>
     <h1>Card Game</h1>
     <button onclick="drawCard()">Draw Card</button>
     <p id="cardValue">Press the button to draw a card.</p>
     <p id="potValue">Pot: 2 cents</p>
+    <p id="drawnCards">Drawn Cards: </p>
     <script>
         let currentPot = 2;
+        let drawnCards = [];
+        let drawCount = 0;
+
         function drawCard() {
-            const cardValue = Math.floor(Math.random() * 13) + 1; // 1 to 13
+            // Ensure unique draw
+            let cardValue;
+            do {
+                cardValue = Math.floor(Math.random() * 13) + 1;
+            } while (drawnCards.includes(cardValue) && drawnCards.length < 25);
+
+            drawnCards.push(cardValue);
+            drawCount++;
+
             let message = "";
             if (cardValue > 5) {
                 currentPot += 1; // Win scenario
-                message = "You drew " + cardValue + ". You win! New pot: " + currentPot + " cents.";
+                message = "<span class='high-card card-value'>" + cardValue + "</span>. You win! New pot: " + currentPot + " cents.";
             } else if (cardValue === 5) {
                 currentPot -= 0.5;
-                message = "You drew 5. You lose 0.5 cents. New pot: " + currentPot + " cents.";
+                message = "<span class='card-value'>" + cardValue + "</span>. You lose 0.5 cents. New pot: " + currentPot + " cents.";
             } else {
-                currentPot = 0; // Lose all
-                message = "You drew " + cardValue + ". You lose everything.";
+                message = "<span class='low-card card-value'>" + cardValue + "</span>. You lose everything.";
                 currentPot = 2; // Reset pot for the next round
             }
-            document.getElementById("cardValue").innerText = message;
+
+            if (drawCount === 25) {
+                drawnCards = []; // Reset the drawn cards
+                drawCount = 0; // Reset the draw count
+                message += " The deck is reset.";
+            }
+
+            document.getElementById("cardValue").innerHTML = message;
             document.getElementById("potValue").innerText = "Pot: " + currentPot + " cents";
+            document.getElementById("drawnCards").innerText = "Drawn Cards: " + drawnCards.join(", ");
         }
     </script>
 </body>
