@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Card Game</title>
+</head>
+<body>
+    <h1>Card Game</h1>
+    <button onclick="drawCard()">Draw Card</button>
+    <p id="cardValue">Press the button to draw a card.</p>
+    <p id="potValue">Pot: 2 cents</p>
+    <script>
+        let currentPot = 2;
+        function drawCard() {
+            const cardValue = Math.floor(Math.random() * 13) + 1; // 1 to 13
+            let message = "";
+            if (cardValue > 5) {
+                currentPot += 1; // Win scenario
+                message = "You drew " + cardValue + ". You win! New pot: " + currentPot + " cents.";
+            } else if (cardValue === 5) {
+                currentPot -= 0.5;
+                message = "You drew 5. You lose 0.5 cents. New pot: " + currentPot + " cents.";
+            } else {
+                currentPot = 0; // Lose all
+                message = "You drew " + cardValue + ". You lose everything.";
+                currentPot = 2; // Reset pot for the next round
+            }
+            document.getElementById("cardValue").innerText = message;
+            document.getElementById("potValue").innerText = "Pot: " + currentPot + " cents";
+        }
+    </script>
+</body>
+</html>
