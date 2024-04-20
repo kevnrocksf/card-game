@@ -1,81 +1,85 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Card Game</title>
-    <style>
-        .card-value {
-            font-weight: bold;
-        }
-        .low-card {
-            color: blue;
-        }
-        .mid-card {
-            color: purple;
-        }
-        .high-card {
-            color: red;
-        }
-    </style>
-</head>
-<body>
-    <h1>Card Game</h1>
-    <button onclick="drawCard()">Draw Card</button>
-    <p id="cardValue">Press the button to draw a card.</p>
-    <p id="potValue">Pot: 2 cents</p>
-    <div id="drawnCards">
-        <p>Drawn Cards Under 5: <span id="drawnCardsUnder5"></span></p>
-        <p>Drawn Cards Exactly 5: <span id="drawnCards5"></span></p>
-        <p>Drawn Cards Over 5: <span id="drawnCardsOver5"></span></p>
-    </div>
-    <script>
-        let currentPot = 2;
-        let drawnCardsUnder5 = [];
-        let drawnCards5 = [];
-        let drawnCardsOver5 = [];
-        let drawCount = 0;
+let currentPot = 2;
+let totalWins = 0;
+let totalLosses = 0;
+let centsGained = 0;
+let centsLost = 0;
+let drawnCards = [];
+let cardCount = 0; // Track the number of cards drawn
 
-        function drawCard() {
-            // Ensure unique draw within the range 1-10
-            let cardValue;
-            do {
-                cardValue = Math.floor(Math.random() * 10) + 1;
-            } while ((drawnCardsUnder5.includes(cardValue) || 
-                      drawnCards5.includes(cardValue) || 
-                      drawnCardsOver5.includes(cardValue)) && 
-                     (drawnCardsUnder5.length + drawnCards5.length + drawnCardsOver5.length < 10));
+function drawCard() {
+    // Reset the game after 37 cards have been drawn
+    if (cardCount >= 37) {
+        resetGame();
+    }
 
-            drawCount++;
+    let cardValue = Math.floor(Math.random() * 37) + 1;
+    while (drawnCards.includes(cardValue)) {
+        cardValue = Math.floor(Math.random() * 37) + 1; // Ensure a unique card is drawn
+    }
 
-            let message = "";
-            if (cardValue > 5) {
-                currentPot += 1; // Win scenario
-                drawnCardsOver5.push(cardValue);
-                message = "<span class='high-card card-value'>" + cardValue + "</span>. You win! New pot: " + currentPot + " cents.";
-            } else if (cardValue === 5) {
-                currentPot -= 0.5;
-                drawnCards5.push(cardValue);
-                message = "<span class='mid-card card-value'>" + cardValue + "</span>. You lose 0.5 cents. New pot: " + currentPot + " cents.";
-            } else {
-                drawnCardsUnder5.push(cardValue);
-                message = "<span class='low-card card-value'>" + cardValue + "</span>. You lose everything.";
-                currentPot = 2; // Reset pot for the next round
-            }
+    drawnCards.push(cardValue);
+    cardCount++; // Increment the card count
 
-            // Check if the deck is empty
-            if (drawCount === 25 || (drawnCardsUnder5.length + drawnCards5.length + drawnCardsOver5.length === 10)) {
-                drawnCardsUnder5 = []; // Reset the drawn cards under 5
-                drawnCards5 = []; // Reset the drawn cards at 5
-                drawnCardsOver5 = []; // Reset the drawn cards over 5
-                drawCount = 0; // Reset the draw count
-                message += " The deck is reset.";
-            }
+    // Check for special losing conditions
+    if ([25, 28, 31, 34].includes(cardValue)) {
+        losePot();
+    } else if ([1, 4, 7, 10, 13, 16, 19, 22].includes(cardValue)) {
+        loseHalf();
+    } else {
+        winCents();
+    }
 
-            document.getElementById("cardValue").innerHTML = message;
-            document.getElementById("potValue").innerText = "Pot: " + currentPot + " cents";
-            document.getElementById("drawnCardsUnder5").innerText = drawnCardsUnder5.join(", ");
-            document.getElementById("drawnCards5").innerText = drawnCards5.join(", ");
-            document.getElementById("drawnCardsOver5").innerText = drawnCardsOver5.join(", ");
-        }
-    </script>
-</body>
-</html>
+    updateGameDisplay(cardValue);
+}
+
+function losePot() {
+    centsLost += currentPot;
+    totalLosses++;
+    currentPot = 0;
+}
+
+function loseHalf() {
+    centsLost += 0.5;
+    currentPot -= 0.5;
+    totalLosses++;
+}
+
+function winCents() {
+    centsGained += 1;
+    currentPot += 1;
+    totalWins++;
+}
+
+function updateGameDisplay(cardValue) {
+    let message = "You drew card number " + cardValue + ". ";
+    if ([25, 28, 31, 34].includes(cardValue)) {
+        message += "You lose the entire pot!";
+    } else if ([1, 4, 7, 10, 13, 16, 19, 22].includes(cardValue)) {
+        message += "You lose 0.5 cents from the pot.";
+    } else {
+        message += "You win 1 cent!";
+    }
+
+    // Update the display elements
+    document.getElementById("cardValue").innerText = message;
+    document.getElementById("potValue").innerText = currentPot + " cents";
+    document.getElementById("totalWins").innerText = totalWins;
+    document.getElementById("totalLosses").innerText = totalLosses;
+    document.getElementById("centsGained").innerText = centsGained + " cents";
+    document.getElementById("centsLost").innerText = centsLost + " cents";
+    document.getElementById("drawnCards").innerText = "Drawn Cards: " + drawnCards.join(", ");
+}
+
+function resetGame() {
+    cardCount = 0;
+    drawnCards = [];
+    currentPot = 2;
+    totalWins = 0;
+    totalLosses = 0;
+    centsGained = 0;
+    centsLost = 0;
+    updateGameDisplay("The deck is reset.");
+}
+
+// Call this function to reset and start a new game
+resetGame();
